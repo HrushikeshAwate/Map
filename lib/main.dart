@@ -1,10 +1,17 @@
+// main.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'location_service.dart';
-import 'package:map/screens/map_screen.dart';
-import 'package:map/screens/table_screen.dart';
+import 'screens/map_screen.dart';
+import 'screens/table_screen.dart';
+import 'notification.dart';
+import 'package:permission_handler/permission_handler.dart';
 
-void main() {
+
+void main() async {
+  WidgetsFlutterBinding.ensureInitialized();
+  await requestPermissions();
+  await initializeNotificationService();
   runApp(
     ChangeNotifierProvider(
       create: (_) => LocationService(),
@@ -26,6 +33,15 @@ class MyApp extends StatelessWidget {
   }
 }
 
+
+Future<void> requestPermissions() async {
+  await Permission.location.request();
+  await Permission.notification.request();
+  await Permission.ignoreBatteryOptimizations.request(); 
+  await Permission.locationAlways.request(); // ⬅️ this is the key!
+
+}
+
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
 
@@ -35,11 +51,7 @@ class HomeScreen extends StatefulWidget {
 
 class _HomeScreenState extends State<HomeScreen> {
   int _currentIndex = 0;
-
-  final List<Widget> _screens = [
-    const MapScreen(),
-    const TableScreen(),
-  ];
+  final List<Widget> _screens = [const MapScreen(), const TableScreen()];
 
   @override
   Widget build(BuildContext context) {

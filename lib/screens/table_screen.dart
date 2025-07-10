@@ -1,35 +1,33 @@
 import 'package:flutter/material.dart';
-import 'package:map/location_service.dart';
 import 'package:provider/provider.dart';
-import 'package:intl/intl.dart';
+import '../location_service.dart';
 
 class TableScreen extends StatelessWidget {
   const TableScreen({super.key});
 
   @override
   Widget build(BuildContext context) {
-    final locationList = Provider.of<LocationService>(context).locationList;
+    final locationHistory = context.watch<LocationService>().locationHistory;
 
     return Scaffold(
-      body: locationList.isEmpty
+      appBar: AppBar(title: const Text('Location Table')),
+      body: locationHistory.isEmpty
           ? const Center(child: Text("Waiting for location updates..."))
           : SingleChildScrollView(
-              scrollDirection: Axis.vertical,
+              scrollDirection: Axis.horizontal,
               child: SingleChildScrollView(
-                scrollDirection: Axis.horizontal,
+                scrollDirection: Axis.vertical,
                 child: DataTable(
                   columns: const [
                     DataColumn(label: Text('Latitude')),
                     DataColumn(label: Text('Longitude')),
-                    DataColumn(label: Text('Time')),
+                    DataColumn(label: Text('Timestamp')),
                   ],
-                  rows: locationList.map((loc) {
+                  rows: locationHistory.map((entry) {
                     return DataRow(cells: [
-                      DataCell(Text(loc['lat'].toString())),
-                      DataCell(Text(loc['lng'].toString())),
-                      DataCell(Text(
-                        DateFormat('HH:mm:ss').format(DateTime.parse(loc['time'])),
-                      )),
+                      DataCell(Text(entry['latitude'].toString())),
+                      DataCell(Text(entry['longitude'].toString())),
+                      DataCell(Text(entry['timestamp'].toString())),
                     ]);
                   }).toList(),
                 ),

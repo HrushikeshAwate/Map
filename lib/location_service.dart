@@ -1,36 +1,53 @@
+import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:location/location.dart';
 
-class LocationService extends ChangeNotifier {
+class LocationService with ChangeNotifier {
   final Location _location = Location();
-  LocationData? _currentLocation;
-  final List<Map<String, dynamic>> _locationList = [];
+  LocationData? currentLocation;
+  final List<Map<String, dynamic>> _locationHistory = [];
+  Timer? _timer;
+
+  List<Map<String, dynamic>> get locationHistory => _locationHistory;
 
   LocationService() {
     _init();
   }
 
-  List<Map<String, dynamic>> get locationList => _locationList;
-  LocationData? get currentLocation => _currentLocation;
-
-  void _init() async {
-    bool enabled = await _location.serviceEnabled();
-    if (!enabled) enabled = await _location.requestService();
-    PermissionStatus permission = await _location.hasPermission();
-    if (permission == PermissionStatus.denied) {
-      permission = await _location.requestPermission();
+  Future<void> _init() async {
+    bool serviceEnabled = await _location.serviceEnabled();
+    if (!serviceEnabled) {
+      serviceEnabled = await _location.requestService();
+      if (!serviceEnabled) return;
     }
 
-    if (enabled && permission == PermissionStatus.granted) {
-      _location.onLocationChanged.listen((loc) {
-        _currentLocation = loc;
-        _locationList.add({
-          'lat': loc.latitude,
-          'lng': loc.longitude,
-          'time': DateTime.now().toIso8601String(),
-        });
-        notifyListeners();
+    PermissionStatus permissionGranted = await _location.hasPermission();
+    if (permissionGranted == PermissionStatus.denied) {
+      permissionGranted = await _location.requestPermission();
+      if (permissionGranted != PermissionStatus.granted) return;
+    }
+
+    // Location settings (not listener-based now)
+    _location.changeSettings(interval: 30000, distanceFilter: 0);
+
+    // Fetch location every 30 seconds
+    _timer = Timer.periodic(const Duration(seconds: 30), (_) async {
+      final data = await _location.getLocation();
+      currentLocation = data;
+
+      _locationHistory.add({
+        'latitude': data.latitude,
+        'longitude': data.longitude,
+        'timestamp': DateTime.now().toIso8601String(),
       });
-    }
+
+      notifyListeners();
+    });
+  }
+
+  @override
+  void dispose() {
+    _timer?.cancel();
+    super.dispose();
   }
 }
