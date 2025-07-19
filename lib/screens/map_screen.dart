@@ -75,7 +75,7 @@ class _MapScreenState extends State<MapScreen> {
               },
             )
           : const Center(
-              child: Text("Location permission not granted."),
+              child: Text("Fetching Location"),
             ),
     );
   }

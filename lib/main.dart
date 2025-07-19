@@ -1,4 +1,3 @@
-// main.dart
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import 'location_service.dart';
@@ -38,7 +37,7 @@ Future<void> requestPermissions() async {
   await Permission.location.request();
   await Permission.notification.request();
   await Permission.ignoreBatteryOptimizations.request(); 
-  await Permission.locationAlways.request(); // ⬅️ this is the key!
+  await Permission.locationAlways.request(); 
 
 }
 

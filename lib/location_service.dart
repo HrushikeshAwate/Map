@@ -1,6 +1,7 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:location/location.dart';
+import 'database_helper.dart'; // Add this import
 
 class LocationService with ChangeNotifier {
   final Location _location = Location();
@@ -15,6 +16,11 @@ class LocationService with ChangeNotifier {
   }
 
   Future<void> _init() async {
+    // Load saved data from DB on startup
+    final savedData = await DatabaseHelper().getAllLocations();
+    _locationHistory.addAll(savedData);
+    notifyListeners();
+
     bool serviceEnabled = await _location.serviceEnabled();
     if (!serviceEnabled) {
       serviceEnabled = await _location.requestService();
@@ -27,22 +33,29 @@ class LocationService with ChangeNotifier {
       if (permissionGranted != PermissionStatus.granted) return;
     }
 
-    // Location settings (not listener-based now)
     _location.changeSettings(interval: 30000, distanceFilter: 0);
 
-    // Fetch location every 30 seconds
-    _timer = Timer.periodic(const Duration(seconds: 30), (_) async {
+    _timer = Timer.periodic(const Duration(seconds: 2), (_) async {
       final data = await _location.getLocation();
       currentLocation = data;
 
-      _locationHistory.add({
+      final entry = {
         'latitude': data.latitude,
         'longitude': data.longitude,
-        'timestamp': DateTime.now().toIso8601String(),
-      });
+        'timestamp': DateTime.now().toLocal().toString().split('.').first,
+      };
+
+      _locationHistory.add(entry);
+      await DatabaseHelper().insertLocation(entry); // Save to DB
 
       notifyListeners();
     });
+  }
+
+  void clearLocationHistory() async {
+    _locationHistory.clear();
+    await DatabaseHelper().clearAllLocations(); // Clear DB too
+    notifyListeners();
   }
 
   @override

@@ -3,6 +3,8 @@ import 'dart:ui';
 import 'package:flutter_background_service/flutter_background_service.dart';
 import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:location/location.dart';
+import 'package:map/local_db.dart';
+import 'package:map/location_entry.dart';
 
 Future<void> initializeNotificationService() async {
   final service = FlutterBackgroundService();
@@ -17,7 +19,7 @@ Future<void> initializeNotificationService() async {
       initialNotificationContent: 'Fetching location...',
       foregroundServiceNotificationId: 888,
     ),
-    iosConfiguration: IosConfiguration(), // iOS no-op
+    iosConfiguration: IosConfiguration(), 
   );
 
   await service.startService();
@@ -25,7 +27,7 @@ Future<void> initializeNotificationService() async {
 
 @pragma('vm:entry-point')
 void notificationServiceEntryPoint(ServiceInstance service) async {
-  DartPluginRegistrant.ensureInitialized(); // IMPORTANT: Register plugins in isolate
+  DartPluginRegistrant.ensureInitialized();
   final location = Location();
 
   print("🟢 Background service started");
@@ -55,21 +57,32 @@ void notificationServiceEntryPoint(ServiceInstance service) async {
     print("✅ Foreground notification service started");
 
     Timer.periodic(const Duration(seconds: 30), (timer) async {
-      try {
-        final loc = await location.getLocation();
-        final lat = loc.latitude?.toStringAsFixed(5) ?? 'N/A';
-        final lng = loc.longitude?.toStringAsFixed(5) ?? 'N/A';
-        final time = DateTime.now().toIso8601String();
+  try {
+    final loc = await location.getLocation();
+    final lat = loc.latitude?.toStringAsFixed(5) ?? 'N/A';
+    final lng = loc.longitude?.toStringAsFixed(5) ?? 'N/A';
+    final time = DateTime.now();
 
-        print("📍 Background location: $lat, $lng");
+    print("📍 Background location: $lat, $lng");
 
-        await service.setForegroundNotificationInfo(
-          title: '📍 Lat: $lat, Lng: $lng',
-          content: '🕒 $time',
-        );
-      } catch (e) {
-        print("❌ Background fetch failed: $e");
-      }
-    });
+    // Update the notification
+    await service.setForegroundNotificationInfo(
+      title: '📍 Lat: $lat, Lng: $lng',
+      content: '🕒 ${time.toIso8601String()}',
+    );
+
+    // ✅ Insert into the database
+    if (loc.latitude != null && loc.longitude != null) {
+      await LocationDB.instance.insertLocation(LocationEntry(
+        latitude: loc.latitude!,
+        longitude: loc.longitude!,
+        timestamp: time.toIso8601String(),
+      ));
+      print("✅ Saved location to DB");
+    }
+  } catch (e) {
+    print("❌ Background fetch failed: $e");
+  }
+});
   }
 }
