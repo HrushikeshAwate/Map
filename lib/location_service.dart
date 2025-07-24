@@ -1,66 +1,55 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
-import 'package:location/location.dart';
-import 'database_helper.dart'; // Add this import
+import 'package:geolocator/geolocator.dart';
+import 'package:map/database_helper.dart';
+import 'firebase_db.dart';
+import 'package:map/database_helper.dart';
 
-class LocationService with ChangeNotifier {
-  final Location _location = Location();
-  LocationData? currentLocation;
+class LocationService extends ChangeNotifier {
   final List<Map<String, dynamic>> _locationHistory = [];
-  Timer? _timer;
+  Timer? _locationTimer;
+  Timer? _syncTimer;
 
   List<Map<String, dynamic>> get locationHistory => _locationHistory;
 
   LocationService() {
-    _init();
+    _startLocationUpdates();
+    _startFirebaseSync();
   }
 
-  Future<void> _init() async {
-    // Load saved data from DB on startup
-    final savedData = await DatabaseHelper().getAllLocations();
-    _locationHistory.addAll(savedData);
-    notifyListeners();
-
-    bool serviceEnabled = await _location.serviceEnabled();
-    if (!serviceEnabled) {
-      serviceEnabled = await _location.requestService();
-      if (!serviceEnabled) return;
-    }
-
-    PermissionStatus permissionGranted = await _location.hasPermission();
-    if (permissionGranted == PermissionStatus.denied) {
-      permissionGranted = await _location.requestPermission();
-      if (permissionGranted != PermissionStatus.granted) return;
-    }
-
-    _location.changeSettings(interval: 30000, distanceFilter: 0);
-
-    _timer = Timer.periodic(const Duration(seconds: 2), (_) async {
-      final data = await _location.getLocation();
-      currentLocation = data;
-
-      final entry = {
-        'latitude': data.latitude,
-        'longitude': data.longitude,
-        'timestamp': DateTime.now().toLocal().toString().split('.').first,
+  void _startLocationUpdates() {
+    _locationTimer = Timer.periodic(const Duration(seconds: 10), (_) async {
+      final position = await Geolocator.getCurrentPosition();
+      final location = {
+        'latitude': position.latitude,
+        'longitude': position.longitude,
+        'speed': position.speed,
+        'timestamp': DateTime.now().toIso8601String().split('.')[0] 
       };
 
-      _locationHistory.add(entry);
-      await DatabaseHelper().insertLocation(entry); // Save to DB
-
+      _locationHistory.add(location);
       notifyListeners();
+
+      await DatabaseHelper().insertLocation(location);
+    });
+  }
+
+  void _startFirebaseSync() {
+    _syncTimer = Timer.periodic(const Duration(minutes: 2), (_) async {
+      await uploadAllLocationsToFirebase();
     });
   }
 
   void clearLocationHistory() async {
     _locationHistory.clear();
-    await DatabaseHelper().clearAllLocations(); // Clear DB too
     notifyListeners();
+    await DatabaseHelper().clearAllLocations();
   }
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _locationTimer?.cancel();
+    _syncTimer?.cancel();
     super.dispose();
   }
 }

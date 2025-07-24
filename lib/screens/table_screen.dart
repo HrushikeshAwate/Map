@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../location_service.dart';
+import '../firebase_db.dart';
 
 class TableScreen extends StatelessWidget {
   const TableScreen({super.key});
@@ -11,7 +12,6 @@ class TableScreen extends StatelessWidget {
     final locationHistory = locationService.locationHistory;
 
     return Scaffold(
-      appBar: AppBar(title: const Text('Location Table')),
       body: Column(
         children: [
           Expanded(
@@ -25,12 +25,14 @@ class TableScreen extends StatelessWidget {
                         columns: const [
                           DataColumn(label: Text('Latitude')),
                           DataColumn(label: Text('Longitude')),
+                          DataColumn(label: Text('Speed')),
                           DataColumn(label: Text('Timestamp')),
                         ],
                         rows: locationHistory.map((entry) {
                           return DataRow(cells: [
                             DataCell(Text(entry['latitude'].toString())),
                             DataCell(Text(entry['longitude'].toString())),
+                            DataCell(Text(entry['speed'].toString())),
                             DataCell(Text(entry['timestamp'].toString())),
                           ]);
                         }).toList(),
@@ -41,7 +43,7 @@ class TableScreen extends StatelessWidget {
           Container(
             padding: const EdgeInsets.symmetric(vertical: 10),
             child: Row(
-              mainAxisAlignment: MainAxisAlignment.end,
+              mainAxisAlignment: MainAxisAlignment.spaceEvenly,
               children: [
                 ElevatedButton.icon(
                   onPressed: () {
@@ -55,6 +57,21 @@ class TableScreen extends StatelessWidget {
                     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   ),
                 ),
+                // ElevatedButton.icon(
+                //   onPressed: () async {
+                //     await uploadAllLocationsToFirebase();
+                //     ScaffoldMessenger.of(context).showSnackBar(
+                //       const SnackBar(content: Text("Data synced to Firebase")),
+                //     );
+                //   },
+                //   icon: const Icon(Icons.cloud_upload),
+                //   label: const Text("Sync to Firebase"),
+                //   style: ElevatedButton.styleFrom(
+                //     backgroundColor: const Color.fromARGB(255, 0, 180, 90),
+                //     foregroundColor: Colors.white,
+                //     padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                //   ),
+                // ),
               ],
             ),
           ),

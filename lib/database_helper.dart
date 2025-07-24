@@ -27,6 +27,7 @@ class DatabaseHelper {
             id INTEGER PRIMARY KEY AUTOINCREMENT,
             latitude REAL,
             longitude REAL,
+            speed REAL,
             timestamp TEXT
           )
         ''');
@@ -49,3 +50,5 @@ class DatabaseHelper {
     await db.delete('locations');
   }
 }
+
+Future<Database> openLocalDb() => DatabaseHelper().database;

@@ -64,11 +64,11 @@ class LocationDB {
     await db.delete('locations');
   }
 
-  Future<void> printAllLocations() async {
-    final db = await database;
-    final List<Map<String, dynamic>> maps = await db.query('locations');
-    for (final row in maps) {
-      print("📍 Lat: ${row['latitude']}, Lng: ${row['longitude']}, Time: ${row['timestamp']}");
-    }
-  }
+  // Future<void> printAllLocations() async {
+  //   final db = await database;
+  //   final List<Map<String, dynamic>> maps = await db.query('locations');
+  //   // for (final row in maps) {
+  //   //   // print("📍 Lat: ${row['latitude']}, Lng: ${row['longitude']}, Time: ${row['timestamp']}");
+  //   // }
+  //   print("📍 Total locations: ${maps.length}");
 }
