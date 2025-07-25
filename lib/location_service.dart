@@ -23,7 +23,7 @@ class LocationService extends ChangeNotifier {
       final location = {
         'latitude': position.latitude,
         'longitude': position.longitude,
-        'speed': position.speed,
+        'speed': double.parse(position.speed.toStringAsFixed(2)),
         'timestamp': DateTime.now().toIso8601String().split('.')[0] 
       };
 

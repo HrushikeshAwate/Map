@@ -1,6 +1,7 @@
 import 'package:firebase_database/firebase_database.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'database_helper.dart';
+import 'package:map/device_info.dart';
 
 Future<void> uploadAllLocationsToFirebase() async {
   final dbHelper = DatabaseHelper();
@@ -11,15 +12,16 @@ Future<void> uploadAllLocationsToFirebase() async {
     databaseURL: 'https://maps-3759d-default-rtdb.asia-southeast1.firebasedatabase.app/',
   );
 
-  final dbRef = rtdb.ref('locations');
+final rawId = await getAndroidId();
+final androidId = rawId.replaceAll(RegExp(r'[.#$\[\]]'), '_');
+final dbRef = rtdb.ref('locations').child(androidId);
 
-  for (var loc in locations) {
+  for (final location in locations) {
     await dbRef.push().set({
-      'id': loc['id'],
-      'latitude': loc['latitude'],
-      'longitude': loc['longitude'],
-      'speed': loc['speed'],
-      'timestamp': loc['timestamp'],
+      'latitude': location['latitude'],
+      'longitude': location['longitude'],
+      'speed': location['speed'],
+      'timestamp': location['timestamp'],
     });
   }
 }
