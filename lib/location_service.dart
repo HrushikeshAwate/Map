@@ -3,7 +3,6 @@ import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
 import 'package:map/database_helper.dart';
 import 'firebase_db.dart';
-import 'package:map/database_helper.dart';
 
 class LocationService extends ChangeNotifier {
   final List<Map<String, dynamic>> _locationHistory = [];

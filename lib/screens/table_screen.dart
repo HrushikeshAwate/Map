@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:provider/provider.dart';
 import '../location_service.dart';
-import '../firebase_db.dart';
 
 class TableScreen extends StatelessWidget {
   const TableScreen({super.key});
