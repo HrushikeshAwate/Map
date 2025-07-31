@@ -45,6 +45,9 @@ dependencies:
   flutter_background_service_android: ^6.3.0
   path_provider: ^2.1.5
   path: ^1.9.1
+  firebase_core: ^4.0.0
+  device_info_plus: ^11.5.0
+  firebase_database: ^12.0.0
 
 
 dev_dependencies:

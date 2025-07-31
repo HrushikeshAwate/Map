@@ -1,13 +1,13 @@
 {
   "project_info": {
-    "project_number": "487049302055",
-    "project_id": "maps-3543f",
-    "storage_bucket": "maps-3543f.firebasestorage.app"
+    "project_number": "816433977665",
+    "project_id": "llt-map-f0121",
+    "storage_bucket": "llt-map-f0121.firebasestorage.app"
   },
   "client": [
     {
       "client_info": {
-        "mobilesdk_app_id": "1:487049302055:android:f82efe340d40a35781fe02",
+        "mobilesdk_app_id": "1:816433977665:android:2578e4fee638735aaaa9c0",
         "android_client_info": {
           "package_name": "com.example.map"
         }
@@ -15,7 +15,7 @@
       "oauth_client": [],
       "api_key": [
         {
-          "current_key": "AIzaSyCa3DuO9ei6c_oWGgeDNEmv3DNDouHyEF8"
+          "current_key": "AIzaSyA7YxGzQxEBY7-XGpxlWNokFcECPGNkniA"
         }
       ],
       "services": {

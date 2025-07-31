@@ -1,13 +1,15 @@
 import 'dart:async';
 import 'package:flutter/foundation.dart';
 import 'package:location/location.dart';
+import 'firebase_db.dart';
 import 'database_helper.dart'; // Add this import
 
 class LocationService with ChangeNotifier {
   final Location _location = Location();
   LocationData? currentLocation;
   final List<Map<String, dynamic>> _locationHistory = [];
-  Timer? _timer;
+  Timer? _locationTimer;
+  Timer? _firebaseTimer;
 
   List<Map<String, dynamic>> get locationHistory => _locationHistory;
 
@@ -17,6 +19,8 @@ class LocationService with ChangeNotifier {
 
   Future<void> _init() async {
     // Load saved data from DB on startup
+    await _location.enableBackgroundMode(enable: true);
+
     final savedData = await DatabaseHelper().getAllLocations();
     _locationHistory.addAll(savedData);
     notifyListeners();
@@ -35,13 +39,14 @@ class LocationService with ChangeNotifier {
 
     _location.changeSettings(interval: 30000, distanceFilter: 0);
 
-    _timer = Timer.periodic(const Duration(seconds: 2), (_) async {
+    _locationTimer = Timer.periodic(const Duration(seconds: 2), (_) async {
       final data = await _location.getLocation();
       currentLocation = data;
 
       final entry = {
         'latitude': data.latitude,
         'longitude': data.longitude,
+        'speed': data.speed ?? 0.0,
         'timestamp': DateTime.now().toLocal().toString().split('.').first,
       };
 
@@ -50,8 +55,13 @@ class LocationService with ChangeNotifier {
 
       notifyListeners();
     });
+    _startFirebaseSync();
   }
-
+   void _startFirebaseSync() {
+    _firebaseTimer = Timer.periodic(const Duration(minutes: 2), (_) async {
+      await uploadAllLocationsToFirebase();
+    });
+  }
   void clearLocationHistory() async {
     _locationHistory.clear();
     await DatabaseHelper().clearAllLocations(); // Clear DB too
@@ -60,7 +70,8 @@ class LocationService with ChangeNotifier {
 
   @override
   void dispose() {
-    _timer?.cancel();
+    _locationTimer?.cancel();
+    _firebaseTimer?.cancel();
     super.dispose();
   }
 }

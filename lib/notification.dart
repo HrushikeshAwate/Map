@@ -1,7 +1,6 @@
 import 'dart:async';
 import 'dart:ui';
 import 'package:flutter_background_service/flutter_background_service.dart';
-import 'package:flutter_background_service_android/flutter_background_service_android.dart';
 import 'package:location/location.dart';
 import 'package:map/local_db.dart';
 import 'package:map/location_entry.dart';
@@ -76,6 +75,7 @@ void notificationServiceEntryPoint(ServiceInstance service) async {
       await LocationDB.instance.insertLocation(LocationEntry(
         latitude: loc.latitude!,
         longitude: loc.longitude!,
+        speed: loc.speed ?? 0.0,
         timestamp: time.toIso8601String(),
       ));
       print("✅ Saved location to DB");

@@ -25,12 +25,14 @@ class TableScreen extends StatelessWidget {
                         columns: const [
                           DataColumn(label: Text('Latitude')),
                           DataColumn(label: Text('Longitude')),
+                          DataColumn(label: Text('Speed')),
                           DataColumn(label: Text('Timestamp')),
                         ],
                         rows: locationHistory.map((entry) {
                           return DataRow(cells: [
                             DataCell(Text(entry['latitude'].toString())),
                             DataCell(Text(entry['longitude'].toString())),
+                            DataCell(Text(entry['speed'].toString())),
                             DataCell(Text(entry['timestamp'].toString())),
                           ]);
                         }).toList(),
